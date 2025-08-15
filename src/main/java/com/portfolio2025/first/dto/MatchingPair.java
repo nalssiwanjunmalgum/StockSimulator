@@ -1,9 +1,9 @@
-package com.portfolio2025.first.domain;
+package com.portfolio2025.first.dto;
 
 import com.portfolio2025.first.domain.vo.Quantity;
-import com.portfolio2025.first.dto.StockOrderRedisDTO;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
+import lombok.ToString;
 
 /**
  * Matching 진행 시 후보로 선정된 대상들
@@ -15,6 +15,7 @@ import lombok.RequiredArgsConstructor;
  */
 @RequiredArgsConstructor
 @Getter
+@ToString
 public class MatchingPair {
     private final StockOrderRedisDTO buyDTO; // REDIS에서 추출된 매수 DTO
     private final StockOrderRedisDTO sellDTO; // REDIS에서 추출된 매도 DTO

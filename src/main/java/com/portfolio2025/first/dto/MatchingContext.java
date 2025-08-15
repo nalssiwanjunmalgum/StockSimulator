@@ -1,5 +1,6 @@
-package com.portfolio2025.first.domain;
+package com.portfolio2025.first.dto;
 
+import com.portfolio2025.first.domain.Portfolio;
 import com.portfolio2025.first.domain.stock.Stock;
 import com.portfolio2025.first.domain.stock.StockOrder;
 import com.portfolio2025.first.domain.vo.Money;

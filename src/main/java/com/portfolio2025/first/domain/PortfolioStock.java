@@ -31,7 +31,8 @@ import lombok.NoArgsConstructor;
 @Table(name = "portfolio_stocks")
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-public class PortfolioStock {
+public class
+PortfolioStock {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

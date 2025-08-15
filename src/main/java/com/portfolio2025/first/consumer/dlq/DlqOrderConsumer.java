@@ -15,16 +15,15 @@ import org.springframework.stereotype.Component;
  */
 @Component
 @Slf4j
-public class InvalidOrderConsumer {
+public class DlqOrderConsumer {
 
     @KafkaListener(
-            topics = "invalid.order.created",
-            groupId = "invalid-order-group",
-            containerFactory = "stringKafkaListenerContainerFactory"
+            topics = "dlq.order.created",
+            groupId = "dlq-order-group"
     )
     public void consumeInvalidOrder(String message) {
         log.warn("⚠️ Received message from DLQ: {}", message);
 
-        // 선택적으로 DB 저장, 관리자 알림 등..
+
     }
 }

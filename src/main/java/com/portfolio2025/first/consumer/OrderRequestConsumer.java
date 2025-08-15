@@ -24,8 +24,8 @@ import org.springframework.stereotype.Component;
  * 주문 생성 이벤트 소비를 담당하는 OrderRequestConsumer
  *
  * [07.30]
- * (추가) publishInvalidMessage - 역직렬화 실패를 대비한 재처리 담당한 메서드 호출
  * (추가) initStrategyMap - 초기화 전 미리 주입하면 의존성 문제 발생으로 PostConstruct 활용..
+ *
  * [고민]
  * 재시도 + DLQ + Idempotency 방지하는 설계로 진행하기
  *
@@ -54,8 +54,7 @@ public class OrderRequestConsumer {
 
     @KafkaListener(
             topics = "order.created",
-            groupId = "order-prepare-group",
-            containerFactory = "stringKafkaListenerContainerFactory"
+            groupId = "order-prepare-group"
     )
     public void consumeOrderCreated(String message, Acknowledgment ack) throws InterruptedException {
         log.info("🟢 Kafka Received: {}", message);
@@ -67,8 +66,10 @@ public class OrderRequestConsumer {
         if (order == null) return;
 
         try {
+            // Redis 처리 진행 -> 이후 Match.request 이벤트 발행하게 된다
             processOrder(order, event);
-            redisRegister.markProcessed(order);
+            // 중복 처리 방지하기 위한 로직 추가
+            redisRegister.tryMarkProcessed(order);
         } catch (Exception e) {
             kafkaDlqService.sendProcessingError("order.created", message, e);
             log.error("❌ 주문 처리 중 예외 발생 → DLQ 전송", e);
@@ -117,8 +118,8 @@ public class OrderRequestConsumer {
 
         for (StockOrder stockOrder : order.getStockOrders()) {
             orderValidator.validate(stockOrder);
-            redisPusher.accept(stockOrder);
-            kafkaProducerService.publishMatchRequest(event.getStockCode());
+            redisPusher.accept(stockOrder); // Redis 내 데이터 반영되는 순간
+            kafkaProducerService.publishMatchRequest(event.getStockCode()); // 해당 종목에 있어 매칭을 요구한다
         }
     }
 }

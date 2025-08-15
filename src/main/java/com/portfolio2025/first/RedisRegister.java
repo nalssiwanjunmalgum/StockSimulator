@@ -27,9 +27,7 @@ public class RedisRegister {
     private static final String ORDER_PROCESSED_PREFIX = "order:processed:";
     private static final Duration TTL = Duration.ofHours(1); // TTL로 중복 방지 유지 시간 설정
 
-    /**
-     * 이미 처리된 주문인지 확인
-     */
+    // 이미 처리된 주문인지 확인
     public boolean isAlreadyProcessed(Order order) {
         String key = ORDER_PROCESSED_PREFIX + order.getId();
         Boolean exists = redisTemplate.hasKey(key);
@@ -37,12 +35,9 @@ public class RedisRegister {
         return exists;
     }
 
-    /**
-     * 주문 처리 완료 후 중복 방지를 위해 등록
-     */
-    public void markProcessed(Order order) {
+    // Redis 최초 등록하기
+    public void tryMarkProcessed(Order order) {
         String key = ORDER_PROCESSED_PREFIX + order.getId();
-        redisTemplate.opsForValue().set(key, "true", TTL);
-        log.info("✅ Redis 처리 완료 등록: {}", key);
+        redisTemplate.opsForValue().setIfAbsent(key, "true", TTL);
     }
 }
