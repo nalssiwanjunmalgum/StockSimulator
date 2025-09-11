@@ -25,7 +25,7 @@ ON DUPLICATE KEY UPDATE
   updated_at   = VALUES(updated_at);
 
 -- 2) ACCOUNTS (FK: accounts.user_id -> users.id, UNIQUE: account_number)
-INSERT INTO accounts (id, user_id, is_active, account_number, bank_name, user_name, money_value, created_at, updated_at)
+INSERT INTO accounts (id, user_id, is_active, account_number, bank_name, user_name, available_cash, created_at, updated_at)
 VALUES
   (1, 1, b'1', '111-222-333333', 'K-BANK', 'buyerName1', 10000000, NOW(), NOW()),
   (2, 2, b'1', '444-555-666666', 'NongHyup', 'sellerName1', 10000000, NOW(), NOW())
@@ -35,7 +35,7 @@ ON DUPLICATE KEY UPDATE
   account_number = VALUES(account_number),
   bank_name      = VALUES(bank_name),
   user_name      = VALUES(user_name),
-  money_value    = VALUES(money_value),
+  available_cash = VALUES(available_cash),
   updated_at     = VALUES(updated_at);
 
 -- 3) PORTFOLIOS (FK: portfolios.user_id -> users.id, UNIQUE: (user_id, portfolio_type))
@@ -70,7 +70,7 @@ ON DUPLICATE KEY UPDATE
 INSERT INTO portfolio_stocks (
     id,
     last_updated_at,
-    money_value,
+    portfolio_average_price,
     portfolio_id,
     portfolio_quantity,
     reserved_quantity,
@@ -81,7 +81,7 @@ VALUES
     (1, NOW(6), 1000000, 2, 10, 0, 1)
 ON DUPLICATE KEY UPDATE
     last_updated_at   = VALUES(last_updated_at),
-    money_value       = VALUES(money_value),
+    portfolio_average_price = VALUES(portfolio_average_price),
     portfolio_quantity = VALUES(portfolio_quantity),
     reserved_quantity = VALUES(reserved_quantity),
     stock_id          = VALUES(stock_id);

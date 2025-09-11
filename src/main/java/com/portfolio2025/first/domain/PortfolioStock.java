@@ -14,6 +14,7 @@ import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
+import jakarta.persistence.UniqueConstraint;
 import java.time.LocalDateTime;
 import lombok.AccessLevel;
 import lombok.Builder;
@@ -28,11 +29,16 @@ import lombok.NoArgsConstructor;
  * [고민]
  */
 @Entity
-@Table(name = "portfolio_stocks")
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-public class
-PortfolioStock {
+@Table(
+        name = "portfolio_stocks",
+        uniqueConstraints = @UniqueConstraint(
+                name = "ux_portfolio_stock",
+                columnNames = {"portfolio_id", "stock_id"}
+        )
+)
+public class PortfolioStock {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -55,7 +61,8 @@ PortfolioStock {
     private Quantity reservedQuantity; // 예약 수량 (중복 매도 수량 방지 위함)
 
     @Embedded
-    @AttributeOverride(name = "priceValue", column = @Column(name = "portfolio_average_price", nullable = false))
+    @AttributeOverride(name = "moneyValue",
+            column = @Column(name = "portfolio_average_price", nullable = false))
     private Money portfolioAveragePrice;
 
     @Column(name = "last_updated_at")

@@ -26,7 +26,8 @@ public class MatchRequestConsumer {
 
     @KafkaListener(
             topics = "match.request",
-            groupId = "trade-match-group"
+            groupId = "${kafka.groups.trade-match}",
+            containerFactory = "stringKafkaListenerContainerFactory"
     )
     public void consumeMatchRequest(String stockCode, Acknowledgment ack) {
         try {
@@ -37,7 +38,6 @@ public class MatchRequestConsumer {
             tradeService.matchWithRetries(stockCode);
 
         } catch (Exception e) {
-            ack.acknowledge();
             log.error("[Kafka] Error while processing match.request: stockCode={}, reason={}", stockCode, e.getMessage(), e);
             // 실패한 요청을 DLQ로 보내거나 알림 처리 추가 가능
         } finally {

@@ -11,8 +11,8 @@ import com.portfolio2025.first.domain.vo.Money;
 import com.portfolio2025.first.domain.vo.Quantity;
 import com.portfolio2025.first.dto.StockOrderRedisDTO;
 import com.portfolio2025.first.dto.event.TradeSavedEvent;
-import com.portfolio2025.first.exception.NonRetryableMatchException;
-import com.portfolio2025.first.exception.RetryableMatchException;
+import com.portfolio2025.first.exception.NonRetryableException;
+import com.portfolio2025.first.exception.RetryableException;
 import com.portfolio2025.first.repository.PortfolioStockRepository;
 import com.portfolio2025.first.repository.StockOrderRepository;
 import com.portfolio2025.first.repository.TradeRepository;
@@ -53,9 +53,9 @@ public class TradeExecutionService {
             saveTradeAndPublishEvent(context, pair);
 
         } catch (EntityNotFoundException | IllegalStateException e) {
-            throw new NonRetryableMatchException(e.getMessage()); // 구조적 문제
+            throw new NonRetryableException(e.getMessage()); // 구조적 문제
         } catch (RedisConnectionException | DataAccessException e) {
-            throw new RetryableMatchException(e.getMessage()); // 일시적 장애
+            throw new RetryableException(e.getMessage()); // 일시적 장애
         }
     }
 

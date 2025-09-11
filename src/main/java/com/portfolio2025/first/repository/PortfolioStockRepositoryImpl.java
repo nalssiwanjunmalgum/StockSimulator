@@ -29,4 +29,17 @@ public class PortfolioStockRepositoryImpl extends BaseRepositoryImpl <PortfolioS
 
         return resultList.stream().findFirst();
     }
+
+    @Override
+    public Optional<PortfolioStock> findByPortfolioAndStock(Portfolio portfolio, Stock stock) {
+        String jqpl = "select ps from PortfolioStock ps where "
+                + "ps.portfolio = :portfolio and ps.stock = :stock";
+
+        List<PortfolioStock> resultList = em.createQuery(jqpl, PortfolioStock.class)
+                .setParameter("portfolio", portfolio)
+                .setParameter("stock", stock)
+                .getResultList();
+
+        return resultList.stream().findFirst();
+    }
 }

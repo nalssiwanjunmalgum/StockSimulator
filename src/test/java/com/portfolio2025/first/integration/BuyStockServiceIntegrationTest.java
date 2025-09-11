@@ -79,7 +79,7 @@ class BuyStockServiceIntegrationTest extends IntegrationTestSupport {
                 .atMost(Duration.ofSeconds(8))        // CI 환경이면 10~15초로 늘려도 OK
                 .pollInterval(Duration.ofMillis(150))
                 .untilAsserted(() ->
-                        assertThat(redisRegister.isAlreadyProcessed(saved)).isTrue()
+                        assertThat(redisRegister.isAlreadyProcessed(saved.getId())).isTrue()
                 );
     }
 }

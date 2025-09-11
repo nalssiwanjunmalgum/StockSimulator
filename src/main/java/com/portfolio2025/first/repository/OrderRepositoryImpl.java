@@ -25,4 +25,24 @@ public class OrderRepositoryImpl extends BaseRepositoryImpl<Order, Long> impleme
 
         return result.stream().findFirst();
     }
+
+    // 너무 과하게 한건 아닐까 하는 생각을 해야 한다
+    @Override
+    public Optional<Order> findWithDetailsById(Long orderId) {
+        List<Order> result = em.createQuery(
+                        "SELECT DISTINCT o FROM Order o " +
+                                "LEFT JOIN FETCH o.stockOrders so " +   // 컬렉션
+                                "LEFT JOIN FETCH so.stock s " +          // 단일
+                                "LEFT JOIN FETCH o.portfolio p " +       // 단일(있다면)
+                                "LEFT JOIN FETCH p.user u " +            // 단일(있다면)
+                                // "LEFT JOIN FETCH o.payments pay "     // 추가 컬렉션이 있다면 주의: 컬렉션이 여러 개면 카티전 폭발 가능
+                                "WHERE o.id = :orderId", Order.class)
+                .setParameter("orderId", orderId)
+                // 하이버네이트 사용 시 DISTINCT 중복 방지 최적화
+                .setHint("hibernate.query.passDistinctThrough", false)
+                .setHint("org.hibernate.readOnly", true)
+                .getResultList();
+
+        return result.stream().findFirst();
+    }
 }

@@ -9,13 +9,14 @@ spring:
     enabled: true
     locations: classpath:db/migration,classpath:db/testdata  # ← 테스트 전용 시드 추가
     clean-disabled: false          # 테스트에서만 허용: 필요 시 clean→migrate (Reset 하려고 할때 clean, migrate 순서로 진행해야 함)
+    clean-on-validation-error: true
     baseline-on-migrate: true
     repeatable-sql-migration-prefix: R
 
   jpa:
     hibernate:
       ddl-auto: validate
-    show-sql: true
+    show-sql: false
     properties:
       hibernate:
         format_sql: true
@@ -28,7 +29,7 @@ spring:
       key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
       value-deserializer: org.apache.kafka.common.serialization.StringDeserializer
       enable-auto-commit: false
-      auto-offset-reset: earliest
+      auto-offset-reset: latest # 이전 레코드 섞임 방지
     producer:
       key-serializer: org.apache.kafka.common.serialization.StringSerializer
       value-serializer: org.apache.kafka.common.serialization.StringSerializer
@@ -36,9 +37,14 @@ spring:
       properties:
         enable.idempotence: true
     listener:
-      ack-mode: MANUAL   # 수동 커밋이면 여기서 지정 (공장 커스터마이징 없이도 가능)
+      ack-mode: manual_immediate   # 수동 커밋이면 여기서 지정 (공장 커스터마이징 없이도 가능)
 
   data:
     redis:
       host: 127.0.0.1
       port: 6379
+
+logging:
+  level:
+    org.hibernate.SQL: off          # SQL 로거 끔
+    org.hibernate.orm.jdbc.bind: off  # Hibernate 6: 파라미터 바인딩 로그 끔

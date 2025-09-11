@@ -1,9 +1,7 @@
-package com.portfolio2025.first.listener;
+package com.portfolio2025.first.publisher;
 
-import com.portfolio2025.first.dto.StockOrderRedisDTO;
 import com.portfolio2025.first.dto.event.TradeSavedEvent;
 import com.portfolio2025.first.service.KafkaProducerService;
-import com.portfolio2025.first.service.RedisStockOrderService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;

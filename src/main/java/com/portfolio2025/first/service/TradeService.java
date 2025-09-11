@@ -3,15 +3,12 @@ package com.portfolio2025.first.service;
 import static jodd.util.ThreadUtil.sleep;
 
 import com.portfolio2025.first.dto.MatchingPair;
-import com.portfolio2025.first.exception.NonRetryableMatchException;
-import com.portfolio2025.first.exception.RetryableMatchException;
+import com.portfolio2025.first.exception.NonRetryableException;
+import com.portfolio2025.first.exception.RetryableException;
 import com.portfolio2025.first.service.dlq.MatchDlqPublisher;
 import java.util.Optional;
-import java.util.concurrent.TimeUnit;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.redisson.api.RLock;
-import org.redisson.api.RedissonClient;
 import org.springframework.stereotype.Service;
 
 
@@ -60,9 +57,9 @@ public class TradeService {
 
             try {
                 tradeExecutionService.matchSinglePair(pair);
-            } catch (RetryableMatchException e) {
+            } catch (RetryableException e) {
                 retryCount = handleRetryable(pair, retryCount, e);
-            } catch (NonRetryableMatchException e) {
+            } catch (NonRetryableException e) {
                 handleNonRetryable(pair, e);
                 break;
             } catch (Exception e) {

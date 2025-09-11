@@ -3,7 +3,7 @@
         is_active bit not null,
         created_at datetime(6) not null,
         id bigint not null auto_increment,
-        money_value bigint,
+        available_cash bigint not null,
         updated_at datetime(6),
         user_id bigint not null,
         account_number varchar(255) not null,
@@ -27,7 +27,7 @@
     create table portfolio_stocks (
         id bigint not null auto_increment,
         last_updated_at datetime(6),
-        money_value bigint,
+        portfolio_average_price bigint not null,
         portfolio_id bigint not null,
         portfolio_quantity bigint not null,
         reserved_quantity bigint not null,
@@ -123,8 +123,13 @@
     alter table stocks
        add constraint UKpq0ii5jhrwhuxsqlio7dbc66s unique (stock_name);
 
-    alter table trade
-       add constraint uk_buy_sell_order unique (buy_order_id, sell_order_id);
+   -- ✅ 포트폴리오-종목 유니크 (중복 보유 레코드 방지)
+   create unique index ux_portfolio_stock
+     on portfolio_stocks (portfolio_id, stock_id);
+
+   -- ✅ 매칭 후보 조회 성능 인덱스 (DB-only 실험용)
+   create index ix_stock_orders_match
+     on stock_orders (stock_id, stock_order_status, requested_price, created_at, id);
 
     alter table accounts
        add constraint FKnjuop33mo69pd79ctplkck40n

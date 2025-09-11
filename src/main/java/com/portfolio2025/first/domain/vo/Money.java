@@ -59,6 +59,9 @@ public class Money {
     }
 
     public Money multiply(Quantity quantity) {
+        if (quantity == null) {
+            throw new IllegalArgumentException("수량이 필요합니다.");
+        }
         return new Money(moneyValue * quantity.getQuantityValue());
     }
 

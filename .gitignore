@@ -35,3 +35,6 @@ out/
 
 ### VS Code ###
 .vscode/
+
+### f-Lab 제외하기
+.github/workflows/sonarcloud-analyze.yml

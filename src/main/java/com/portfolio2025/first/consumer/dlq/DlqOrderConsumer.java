@@ -19,7 +19,7 @@ public class DlqOrderConsumer {
 
     @KafkaListener(
             topics = "dlq.order.created",
-            groupId = "dlq-order-group"
+            groupId = "${kafka.groups.order-dlq}"
     )
     public void consumeInvalidOrder(String message) {
         log.warn("⚠️ Received message from DLQ: {}", message);

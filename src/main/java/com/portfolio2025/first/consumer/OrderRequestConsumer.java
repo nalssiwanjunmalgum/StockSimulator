@@ -8,14 +8,21 @@ import com.portfolio2025.first.domain.Order;
 import com.portfolio2025.first.domain.order.OrderType;
 import com.portfolio2025.first.domain.stock.StockOrder;
 import com.portfolio2025.first.dto.event.OrderCreatedEvent;
+import com.portfolio2025.first.exception.AlreadyProcessedException;
+import com.portfolio2025.first.exception.NonRetryableException;
+import com.portfolio2025.first.exception.PayloadParseException;
+import com.portfolio2025.first.exception.RetryableException;
 import com.portfolio2025.first.service.KafkaDlqService;
 import com.portfolio2025.first.service.KafkaProducerService;
+import com.portfolio2025.first.service.OrderPrepareService;
 import com.portfolio2025.first.service.RedisStockOrderService;
 import jakarta.annotation.PostConstruct;
 import java.util.Map;
 import java.util.function.Consumer;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.dao.DataAccessResourceFailureException;
+import org.springframework.dao.DuplicateKeyException;
 import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.kafka.support.Acknowledgment;
 import org.springframework.stereotype.Component;
@@ -41,6 +48,7 @@ public class OrderRequestConsumer {
     private final RedisRegister redisRegister;
     private final KafkaDlqService kafkaDlqService;
     private final RedisStockOrderService redisStockOrderService;
+    private final OrderPrepareService orderPrepareService;
 
     private Map<OrderType, Consumer<StockOrder>> redisPushStrategy;
 
@@ -54,72 +62,89 @@ public class OrderRequestConsumer {
 
     @KafkaListener(
             topics = "order.created",
-            groupId = "order-prepare-group"
+            groupId = "${kafka.groups.order-prepare}",
+            containerFactory = "stringKafkaListenerContainerFactory" // AckMode=MANUAL_IMMEDIATE
     )
     public void consumeOrderCreated(String message, Acknowledgment ack) throws InterruptedException {
-        log.info("🟢 Kafka Received: {}", message);
-
-        OrderCreatedEvent event = parseEvent(message, ack);
-        if (event == null) return;
-
-        Order order = fetchAndValidateOrder(event, message, ack);
-        if (order == null) return;
-
         try {
-            // Redis 처리 진행 -> 이후 Match.request 이벤트 발행하게 된다
-            processOrder(order, event);
-            // 중복 처리 방지하기 위한 로직 추가
-            redisRegister.tryMarkProcessed(order);
-        } catch (Exception e) {
-            kafkaDlqService.sendProcessingError("order.created", message, e);
-            log.error("❌ 주문 처리 중 예외 발생 → DLQ 전송", e);
-        } finally {
-            ack.acknowledge();
-        }
-    }
-
-    private OrderCreatedEvent parseEvent(String message, Acknowledgment ack) {
-        try {
-            OrderCreatedEvent event = objectMapper.readValue(message, OrderCreatedEvent.class);
-            log.info("🟢 Parsed OrderCreatedEvent: {}", event);
-            return event;
-        } catch (JsonProcessingException e) {
-            kafkaDlqService.sendParseError("order.created", message, e);
-            log.error("❌ JSON 파싱 실패 → DLQ 전송", e);
-            ack.acknowledge();
-            return null;
-        }
-    }
-
-    private Order fetchAndValidateOrder(OrderCreatedEvent event, String message, Acknowledgment ack) {
-        try {
-            Order order = orderValidator.findOrderWithRetry(event.getOrderId());
-            if (redisRegister.isAlreadyProcessed(order)) {
-                log.warn("🔁 Already processed orderId={}", order.getId());
+            // 1) 파싱 (깨지면 NonRetryable)
+            OrderCreatedEvent event = parseEventOrThrow(message);
+            // 2) 멱등 (키 기반) — 이미 처리됨이면 ACK 후 종료
+            if (redisRegister.isAlreadyProcessed(event.getOrderId())) {
+                log.warn("🔁 Already processed orderId={}", event.getOrderId());
                 ack.acknowledge();
-                return null;
+                return;
             }
-            return order;
-        } catch (Exception e) {
-            kafkaDlqService.sendProcessingError("order.created", message, e);
-            log.error("❌ 주문 조회 실패 → DLQ 전송", e);
+            // 3) 주문 조회/검증 (일시 장애면 Retryable, 규칙 위반이면 NonRetryable)
+            Order order = orderPrepareService.fetchAndValidateOrThrow(event);
+            // 4) 처리 (Redis 등록 및 후속 발행) — 내부에서 일시 장애면 Retryable 던지기
+            processOrderOrThrow(order, event);
+            // 5) 멱등 마킹 (원자적 마킹 실패가 중복이라면 NonRetryable로 흡수 or Retryable 정책 선택)
+            redisRegister.tryMarkProcessedOrThrow(order.getId());
+
+            // ✅ 성공 시 ACK
             ack.acknowledge();
-            return null;
+
+        } catch (AlreadyProcessedException e) {
+            log.warn("🔁 Already processed: {}", e.getMessage());
+            ack.acknowledge();
+
+        } catch (PayloadParseException | NonRetryableException e) {
+            // DLT 전송 후 ACK
+            kafkaDlqService.sendProcessingError("order.created", message, e);
+            log.error("🚫 Non-retryable error, sent to DLT", e);
+            ack.acknowledge();
+
+        } catch (RetryableException e) {
+            // ⏳ 재시도 필요 → ACK 금지 (컨테이너가 재전송)
+            log.warn("⏳ Retryable error, will be redelivered", e);
+            throw e;
+
+        } catch (Exception e) {
+            // 분류 못한 예외는 보수적으로 재시도 경로에 태움
+            log.warn("⚠️ Unclassified error, will retry", e);
+            throw e;
         }
     }
 
-    private void processOrder(Order order, OrderCreatedEvent event) {
-        OrderType orderType = OrderType.valueOf(event.getOrderType());
-        Consumer<StockOrder> redisPusher = redisPushStrategy.get(orderType);
-
-        if (redisPusher == null) {
-            throw new IllegalArgumentException("❌ 지원하지 않는 주문 타입: " + orderType);
+    private OrderCreatedEvent parseEventOrThrow(String message) {
+        try {
+            return objectMapper.readValue(message, OrderCreatedEvent.class);
+        } catch (JsonProcessingException e) {
+            throw new PayloadParseException("Bad payload", e); // NonRetryable
         }
+    }
 
-        for (StockOrder stockOrder : order.getStockOrders()) {
-            orderValidator.validate(stockOrder);
-            redisPusher.accept(stockOrder); // Redis 내 데이터 반영되는 순간
-            kafkaProducerService.publishMatchRequest(event.getStockCode()); // 해당 종목에 있어 매칭을 요구한다
+
+    private void processOrderOrThrow(Order order, OrderCreatedEvent event) {
+        try {
+            OrderType orderType = OrderType.valueOf(event.getOrderType());
+            Consumer<StockOrder> redisPusher = redisPushStrategy.get(orderType);
+            if (redisPusher == null) {
+                throw new NonRetryableException("Unsupported order type: " + orderType);
+            }
+
+            // (중복 검증 제거: 여기서는 검증하지 않거나, 필요 시 간단 검증만)
+            for (StockOrder so : order.getStockOrders()) {
+                redisPusher.accept(so); // Redis push (여기서 던지는 예외를 아래 catch에서 매핑)
+                kafkaProducerService.publishMatchRequest(event.getStockCode());
+            }
+
+        } catch (DataAccessResourceFailureException e) {
+            // 네트워크/리소스 일시 장애 → 재시도 가치 有
+            throw new RetryableException("Redis transient issue", e);
+
+        } catch (DuplicateKeyException e) {
+            // 중복 삽입(이미 동일한 엔트리 존재) → 멱등으로 흡수 가능
+            throw new AlreadyProcessedException("Idempotent hit while pushing to Redis");
+
+        } catch (IllegalArgumentException e) {
+            // 스펙 위반/매핑 불가 등 → NonRetryable
+            throw new NonRetryableException("Process order failed: " + e.getMessage(), e);
+
+        } catch (RuntimeException e) {
+            // 분류 어려우면 보수적으로 재시도
+            throw new RetryableException("Unexpected processing failure", e);
         }
     }
 }

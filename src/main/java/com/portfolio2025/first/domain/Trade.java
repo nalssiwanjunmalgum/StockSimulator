@@ -33,9 +33,7 @@ import lombok.NoArgsConstructor;
 @Entity
 @Getter
 @NoArgsConstructor
-@Table( uniqueConstraints = {
-        @UniqueConstraint(name = "uk_buy_sell_order", columnNames = {"buy_order_id", "sell_order_id"})
-})
+@Table
 public class Trade {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

@@ -1,6 +1,7 @@
 package com.portfolio2025.first.domain;
 
 import com.portfolio2025.first.domain.vo.Money;
+import jakarta.persistence.AttributeOverride;
 import jakarta.persistence.Column;
 import jakarta.persistence.Embedded;
 import jakarta.persistence.Entity;
@@ -44,6 +45,7 @@ public class Account {
     @Column(name = "account_number", nullable = false, unique = true)
     private String accountNumber; // 계좌번호
 
+
     @Column(name = "created_at", nullable = false)
     private LocalDateTime createdAt; // TimeStamp - 개설 시각
 
@@ -54,7 +56,8 @@ public class Account {
     private Boolean isActive; // 활성화 여부
 
     @Embedded
-    @Column(name = "available_cash", nullable = false)
+    @AttributeOverride(name = "moneyValue",
+            column = @Column(name = "available_cash", nullable = false))
     private Money availableCash; // Portfolio에서 인출 가능한 금액 (계좌 -> User availableCash -> Portfoio availableCash)
 
     @Column(name = "user_name")
