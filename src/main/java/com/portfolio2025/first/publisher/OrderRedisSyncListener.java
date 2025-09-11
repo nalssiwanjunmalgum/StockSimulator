@@ -28,9 +28,9 @@ public class OrderRedisSyncListener {
         log.info("[KafkaOrderEventListener] 트랜잭션 커밋 후 Kafka 발행: {}", event);
         try {
             kafkaProducerService.publishOrderCreated(event);
-            log.info("✅ Kafka publish success: {}", event);
+            log.info("✅ Kafka for order creation publish success: {}", event);
         } catch (Exception e) {
-            log.error("❌ Kafka publish failed for event: {}", event, e);
+            log.error("❌ Kafka for order creation publish failed for event: {}", event, e);
             // 테스트 중이면 재시도나 fallback 전략을 여기에 넣을 수도 있음
 
         }
