@@ -1,0 +1,8 @@
+package com.portfolio2025.first.refactor.phase_A;
+
+import java.util.List;
+
+public interface CandidateMatchRepository {
+    List<Long> lockSellCandidate(Long stockId, long buyPrice, int limit);
+    List<Long> lockBuyCandidate(Long stockId, long buyPrice, int limit);
+}

@@ -77,8 +77,8 @@ INSERT INTO portfolio_stocks (
     stock_id
 )
 VALUES
-    -- 포트폴리오 #2가 삼성전자(주식 id=1) 10주 보유, 예약수량 0, 평가금액 1,000,000원
-    (1, NOW(6), 1000000, 2, 10, 0, 1)
+    -- 포트폴리오 #2가 삼성전자(주식 id=1) 10주 보유, 예약수량 0, 평균금액 100,000원
+    (1, NOW(6), 100000, 2, 10, 0, 1)
 ON DUPLICATE KEY UPDATE
     last_updated_at   = VALUES(last_updated_at),
     portfolio_average_price = VALUES(portfolio_average_price),
