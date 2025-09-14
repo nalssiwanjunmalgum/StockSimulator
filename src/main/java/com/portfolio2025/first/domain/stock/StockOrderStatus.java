@@ -15,6 +15,7 @@ package com.portfolio2025.first.domain.stock;
 
 public enum StockOrderStatus {
     PENDING, // 진행 중
+    PROCESSING, // 선점 관련
     PARTIALLY_FILLED, // 일부 체결
     FILLED, // 완료
     CANCELLED, // 취소

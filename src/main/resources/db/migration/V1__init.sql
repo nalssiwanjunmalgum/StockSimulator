@@ -68,7 +68,7 @@
         requested_quantity bigint not null,
         stock_id bigint not null,
         updated_at datetime(6) not null,
-        stock_order_status enum ('CANCELLED','EXPIRED','FILLED','PARTIALLY_FILLED','PENDING') not null,
+        stock_order_status enum ('CANCELLED','EXPIRED','FILLED','PARTIALLY_FILLED','PENDING','PROCESSING') not null,
         primary key (id)
     ) engine=InnoDB default charset=utf8mb4;
 

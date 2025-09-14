@@ -95,6 +95,7 @@ public class StockOrder {
     @Column(name = "updated_at", nullable = false)
     private LocalDateTime updatedAt;
 
+
     @Builder
     private StockOrder(Stock stock, Quantity requestedQuantity, Money requestedPrice,
                        StockOrderStatus stockOrderStatus, Portfolio portfolio) {
