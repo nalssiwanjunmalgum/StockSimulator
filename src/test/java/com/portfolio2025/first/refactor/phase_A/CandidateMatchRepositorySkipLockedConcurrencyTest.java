@@ -2,13 +2,13 @@ package com.portfolio2025.first.refactor.phase_A;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-import com.portfolio2025.first.domain.Order;
-import com.portfolio2025.first.domain.Portfolio;
-import com.portfolio2025.first.domain.order.OrderType;
-import com.portfolio2025.first.domain.stock.Stock;
-import com.portfolio2025.first.domain.stock.StockOrder;
-import com.portfolio2025.first.domain.vo.Money;
-import com.portfolio2025.first.domain.vo.Quantity;
+import com.portfolio2025.first.legacy.domain.Order;
+import com.portfolio2025.first.legacy.domain.Portfolio;
+import com.portfolio2025.first.legacy.domain.order.OrderType;
+import com.portfolio2025.first.legacy.domain.stock.Stock;
+import com.portfolio2025.first.legacy.domain.stock.StockOrder;
+import com.portfolio2025.first.legacy.domain.vo.Money;
+import com.portfolio2025.first.legacy.domain.vo.Quantity;
 import jakarta.persistence.EntityManager;
 import java.util.List;
 import java.util.concurrent.CountDownLatch;

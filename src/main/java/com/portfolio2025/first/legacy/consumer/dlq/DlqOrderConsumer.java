@@ -1,0 +1,29 @@
+package com.portfolio2025.first.legacy.consumer.dlq;
+
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.kafka.annotation.KafkaListener;
+import org.springframework.stereotype.Component;
+
+/**
+ * 주문 생성 관련 이벤트 처리 DLQ 담당하는 InvalidOrderConsumer
+ *
+ * [07.30]
+ * (추가) consumeInvalidOrder() 메서드 추가 (새로운 리스너 메서드 추가함)
+ *
+ * [고민]
+ *
+ */
+@Component
+@Slf4j
+public class DlqOrderConsumer {
+
+    @KafkaListener(
+            topics = "dlq.order.created",
+            groupId = "${kafka.groups.order-dlq}"
+    )
+    public void consumeInvalidOrder(String message) {
+        log.warn("⚠️ Received message from DLQ: {}", message);
+
+
+    }
+}

@@ -38,3 +38,8 @@ out/
 
 ### f-Lab 제외하기
 .github/workflows/sonarcloud-analyze.yml
+
+### 추가
+/build/
+/out/
+/.gradle/

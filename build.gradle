@@ -2,6 +2,7 @@ plugins {
 	id 'java'
 	id 'org.springframework.boot' version '3.5.0'
 	id 'io.spring.dependency-management' version '1.1.7'
+	id 'org.asciidoctor.jvm.convert' version '3.3.2'
 }
 
 group = 'com.portfolio2025'
@@ -32,6 +33,7 @@ dependencies {
 	implementation 'org.springframework.kafka:spring-kafka'
 	implementation 'org.redisson:redisson-spring-boot-starter:3.23.5' // 버전은 최신 확인
 	implementation 'org.springframework.boot:spring-boot-starter-data-redis'
+	implementation 'org.springframework.boot:spring-boot-starter-validation'
 	implementation("org.flywaydb:flyway-mysql")
 
 	compileOnly 'org.projectlombok:lombok'
@@ -43,16 +45,54 @@ dependencies {
 	testImplementation("org.testcontainers:junit-jupiter:1.20.1")
 	testImplementation("org.testcontainers:mysql:1.20.1")
 	testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+	testImplementation 'org.springframework.restdocs:spring-restdocs-mockmvc' // 또는 webtestclient
+	testImplementation 'org.asciidoctor:asciidoctorj:2.5.11'
 	runtimeOnly 'com.mysql:mysql-connector-j'
 }
 
+ext {
+	snippetsDir = file('build/generated-snippets')
+}
+
+/** ───────── 기존 통합 test 태스크 설정(유지) ───────── **/
 tasks.named('test') {
 	useJUnitPlatform()
-
-	// Testcontainers 재사용 강제
+	// Testcontainers 재사용/안정화 설정은 그대로 둠
 	jvmArgs "-Dtestcontainers.reuse.enable=true"
-
-	// static 컨테이너 공유 안정성을 위해 JVM 포크 방지
 	maxParallelForks = 1
 	forkEvery = 0
+}
+
+/** ───────── REST Docs 전용 테스트 태스크 ───────── **/
+tasks.register('restdocsTest', Test) {
+	description = 'Run only tests tagged with @Tag("restdocs") to generate REST Docs snippets.'
+	group = 'verification'
+	useJUnitPlatform {
+		includeTags 'restdocs'
+	}
+	// test 소스셋 재사용
+	testClassesDirs = sourceSets.test.output.classesDirs
+	classpath = sourceSets.test.runtimeClasspath
+	// 스니펫 출력 경로 연결
+	outputs.dir snippetsDir
+}
+
+/** ───────── Asciidoctor: 전용 태스크만 의존하도록 교체 ───────── **/
+asciidoctor {
+	inputs.dir snippetsDir
+
+	// ✅ 중요: 기존 dependsOn test 를 제거/대체하고, 전용 태스크만 의존
+	dependsOn tasks.named('restdocsTest')
+	sources { include 'index.adoc' }
+	baseDirFollowsSourceFile()
+	outputOptions { backends 'html5' }
+	resources {
+		from('src/docs/asciidoc') { include 'images/**' }
+	}
+}
+
+tasks.register('copyDocs', Copy) {
+	dependsOn asciidoctor
+	from("$buildDir/docs/asciidoc")
+	into("$buildDir/docs")
 }

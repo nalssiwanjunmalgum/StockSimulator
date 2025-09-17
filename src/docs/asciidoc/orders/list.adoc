@@ -1,0 +1,13 @@
+=== 3.1 Create Order (POST /api/v1/orders)
+
+==== Request Fields
+include::{snippets}/orders-create/request-fields.adoc[]
+
+==== Response Fields
+include::{snippets}/orders-create/response-fields.adoc[]
+
+==== HTTP Request
+include::{snippets}/orders-create/http-request.adoc[]
+
+==== HTTP Response
+include::{snippets}/orders-create/http-response.adoc[]

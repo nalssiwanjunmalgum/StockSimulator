@@ -1,0 +1,15 @@
+== Common
+
+=== Headers
+|===
+| Header | Required | Description
+| X-Request-Id | optional | Correlation id
+| Idempotency-Key | required for POST /orders | Deduplicate client retries
+| X-Idempotency-Replayed | response | true if replay for the same key
+|===
+
+=== Error Format (RFC7807)
+==== Fields
+include::{snippets}/common/error-fields.adoc[]
+==== Example
+include::{snippets}/common/error-example/http-response.adoc[]

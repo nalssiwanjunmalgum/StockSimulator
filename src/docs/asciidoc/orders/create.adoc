@@ -1,0 +1,25 @@
+=== 3.1 Create Order (POST /api/v1/orders)
+
+NOTE: 이 API는 중복 요청 방지를 위해 `Idempotency-Key` 헤더가 필수입니다.
+
+==== Request Headers
+include::{snippets}/orders-create/request-headers.adoc[opts=optional]
+
+==== Request Fields
+include::{snippets}/orders-create/request-fields.adoc[opts=optional]
+
+==== Response Headers
+include::{snippets}/orders-create/response-headers.adoc[opts=optional]
+
+==== Response Fields
+include::{snippets}/orders-create/response-fields.adoc[opts=optional]
+
+==== HTTP Example
+include::{snippets}/orders-create/http-request.adoc[opts=optional]
+include::{snippets}/orders-create/http-response.adoc[opts=optional]
+
+==== Error (400 Validation)
+include::{snippets}/orders-create-badrequest/http-response.adoc[opts=optional]
+
+==== Idempotency Replay
+include::{snippets}/orders-create-duplicate/response-headers.adoc[opts=optional]

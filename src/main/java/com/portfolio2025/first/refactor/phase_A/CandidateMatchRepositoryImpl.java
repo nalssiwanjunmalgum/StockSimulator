@@ -1,6 +1,6 @@
 package com.portfolio2025.first.refactor.phase_A;
 
-import com.portfolio2025.first.domain.stock.StockOrderStatus;
+import com.portfolio2025.first.legacy.domain.stock.StockOrderStatus;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.LockModeType;
 import java.util.List;

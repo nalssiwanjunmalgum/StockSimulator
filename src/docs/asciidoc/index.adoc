@@ -1,0 +1,24 @@
+= Portfolio2025 Trading API
+:toc:
+:doctype: book
+:snippets: {projectdir}/build/generated-snippets
+
+== 1. Overview
+이 문서는 테스트로부터 생성된 스니펫을 포함합니다.
+
+include::common.adoc[]
+
+== 2. Health
+=== 2.1 GET /health
+간단한 헬스 체크 API.
+
+==== HTTP Request
+include::{snippets}/health/http-request.adoc[]
+==== HTTP Response
+include::{snippets}/health/http-response.adoc[]
+
+== 3. Orders
+include::orders/create.adoc[]
+include::orders/get.adoc[]
+include::orders/list.adoc[]
+include::orders/cancel.adoc[]
