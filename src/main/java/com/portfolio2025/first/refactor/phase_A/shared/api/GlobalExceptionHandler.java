@@ -1,9 +1,8 @@
-package com.portfolio2025.first.refactor.phase_A.api;
+package com.portfolio2025.first.refactor.phase_A.shared.api;
 
 import jakarta.servlet.http.HttpServletRequest;
 
 import java.util.List;
-import com.portfolio2025.first.refactor.phase_A.api.dto.ApiError;
 import org.hibernate.exception.ConstraintViolationException;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;

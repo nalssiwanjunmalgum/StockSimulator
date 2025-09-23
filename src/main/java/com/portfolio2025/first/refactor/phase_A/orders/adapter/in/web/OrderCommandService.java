@@ -1,7 +1,5 @@
-package com.portfolio2025.first.refactor.phase_A.api;
+package com.portfolio2025.first.refactor.phase_A.orders.adapter.in.web;
 
-import com.portfolio2025.first.refactor.phase_A.api.dto.CreateOrderRequest;
-import com.portfolio2025.first.refactor.phase_A.api.dto.CreateOrderResponse;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 

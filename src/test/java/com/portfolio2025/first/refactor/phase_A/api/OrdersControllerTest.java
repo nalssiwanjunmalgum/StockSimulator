@@ -9,8 +9,11 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.portfolio2025.first.refactor.phase_A.api.dto.CreateOrderRequest;
-import com.portfolio2025.first.refactor.phase_A.api.dto.CreateOrderResponse;
+import com.portfolio2025.first.refactor.phase_A.orders.adapter.in.web.CreateOrderRequest;
+import com.portfolio2025.first.refactor.phase_A.orders.adapter.in.web.CreateOrderResponse;
+import com.portfolio2025.first.refactor.phase_A.orders.adapter.in.web.OrdersController;
+import com.portfolio2025.first.refactor.phase_A.orders.adapter.in.web.OrderCommandService;
+import com.portfolio2025.first.refactor.phase_A.shared.api.GlobalExceptionHandler;
 import java.time.OffsetDateTime;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
@@ -27,7 +30,8 @@ class OrdersControllerTest {
 
     @Autowired MockMvc mvc;
     @Autowired ObjectMapper om;
-    @MockitoBean OrderCommandService orderCommandService;
+    @MockitoBean
+    OrderCommandService orderCommandService;
 
 
     @Test

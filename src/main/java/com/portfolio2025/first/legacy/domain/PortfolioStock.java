@@ -61,8 +61,7 @@ public class PortfolioStock {
     private Quantity reservedQuantity; // 예약 수량 (중복 매도 수량 방지 위함)
 
     @Embedded
-    @AttributeOverride(name = "moneyValue",
-            column = @Column(name = "portfolio_average_price", nullable = false))
+    @AttributeOverride(name = "moneyValue", column = @Column(name = "portfolio_average_price", nullable = false))
     private Money portfolioAveragePrice;
 
     @Column(name = "last_updated_at")

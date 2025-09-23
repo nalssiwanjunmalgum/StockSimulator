@@ -1,4 +1,4 @@
-package com.portfolio2025.first.refactor.phase_A;
+package com.portfolio2025.first.refactor.phase_A.concurrency;
 
 import com.portfolio2025.first.legacy.domain.Order;
 import com.portfolio2025.first.legacy.domain.Portfolio;
@@ -8,6 +8,8 @@ import com.portfolio2025.first.legacy.domain.stock.StockOrder;
 import com.portfolio2025.first.legacy.domain.stock.StockOrderStatus;
 import com.portfolio2025.first.legacy.domain.vo.Money;
 import com.portfolio2025.first.legacy.domain.vo.Quantity;
+import com.portfolio2025.first.refactor.phase_A.CandidateMatchRepository;
+import com.portfolio2025.first.refactor.phase_A.CandidateMatchRepositoryImpl;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
@@ -46,7 +48,8 @@ class CandidateMatchRepositorySkipLockedTest {
 
     @Autowired Flyway flyway;
     @Autowired EntityManager em;
-    @Autowired CandidateMatchRepository repo;
+    @Autowired
+    CandidateMatchRepository repo;
     @Autowired PlatformTransactionManager txm;
 
     Long stockId = 1L;

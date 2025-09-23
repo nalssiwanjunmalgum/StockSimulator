@@ -1,4 +1,4 @@
-package com.portfolio2025.first.refactor.phase_A.api.dto;
+package com.portfolio2025.first.refactor.phase_A.shared.api;
 
 import lombok.*;
 

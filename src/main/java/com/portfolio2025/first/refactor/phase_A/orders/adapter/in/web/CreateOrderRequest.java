@@ -1,4 +1,4 @@
-package com.portfolio2025.first.refactor.phase_A.api.dto;
+package com.portfolio2025.first.refactor.phase_A.orders.adapter.in.web;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;

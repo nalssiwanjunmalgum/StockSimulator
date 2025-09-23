@@ -56,8 +56,7 @@ public class Account {
     private Boolean isActive; // 활성화 여부
 
     @Embedded
-    @AttributeOverride(name = "moneyValue",
-            column = @Column(name = "available_cash", nullable = false))
+    @AttributeOverride(name = "moneyValue", column = @Column(name = "available_cash", nullable = false))
     private Money availableCash; // Portfolio에서 인출 가능한 금액 (계좌 -> User availableCash -> Portfoio availableCash)
 
     @Column(name = "user_name")

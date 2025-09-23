@@ -15,13 +15,17 @@
     create table orders (
         deleted bit not null,
         created_at datetime(6) not null,
+        -- ✅ 추가
+        client_order_id varchar(64) not null,
         id bigint not null auto_increment,
         total_price bigint,
         updated_at datetime(6) not null,
         user_id bigint not null,
         order_status enum ('CANCELED','COMPLETED','CREATED','PROCESSING') not null,
         order_type enum ('BUY','SELL') not null,
-        primary key (id)
+        primary key (id),
+        -- ✅ 유니크 제약을 테이블 정의 안에 바로 넣어도 됨
+        unique key uk_user_client_order (user_id, client_order_id)
     ) engine=InnoDB default charset=utf8mb4;
 
     create table portfolio_stocks (

@@ -21,6 +21,7 @@ import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
+import jakarta.persistence.UniqueConstraint;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -38,7 +39,9 @@ import lombok.NoArgsConstructor;
  * 1. CREATED, PROCESSING 상태를 명확하게 구분할 수 있어야 함
  */
 @Entity
-@Table(name = "orders")
+@Table(name = "orders", uniqueConstraints = {
+        @UniqueConstraint(name = "uk_user_client_order", columnNames = {"user_id", "client_order_id"})
+})
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class Order {
@@ -46,6 +49,9 @@ public class Order {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
+
+    @Column(name = "client_order_id", nullable = false, length = 64)
+    private String clientOrderId;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id", nullable = false)
@@ -78,8 +84,9 @@ public class Order {
 
 
     @Builder
-    private Order(User user, OrderType orderType, Money totalPrice) {
+    private Order(User user, String clientOrderId, OrderType orderType, Money totalPrice) {
         this.user = user;
+        this.clientOrderId = clientOrderId;
         this.orderStatus = OrderStatus.CREATED;
         this.orderType = orderType;
         this.totalPrice = totalPrice;

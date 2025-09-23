@@ -1,4 +1,4 @@
-package com.portfolio2025.first.refactor.phase_A;
+package com.portfolio2025.first.refactor.phase_A.concurrency;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -9,6 +9,8 @@ import com.portfolio2025.first.legacy.domain.stock.Stock;
 import com.portfolio2025.first.legacy.domain.stock.StockOrder;
 import com.portfolio2025.first.legacy.domain.vo.Money;
 import com.portfolio2025.first.legacy.domain.vo.Quantity;
+import com.portfolio2025.first.refactor.phase_A.CandidateMatchRepository;
+import com.portfolio2025.first.refactor.phase_A.CandidateMatchRepositoryImpl;
 import jakarta.persistence.EntityManager;
 import java.util.List;
 import java.util.concurrent.CountDownLatch;
@@ -37,7 +39,8 @@ class CandidateMatchRepositorySkipLockedConcurrencyTest {
     Flyway flyway;
     @Autowired
     EntityManager em;
-    @Autowired CandidateMatchRepository repo;
+    @Autowired
+    CandidateMatchRepository repo;
     @Autowired
     PlatformTransactionManager txm;
 
