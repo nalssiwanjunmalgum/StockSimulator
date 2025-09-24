@@ -19,7 +19,7 @@ public interface CreateOrderUseCase {
     class CreateOrderCommand {
         Long userId;
         Long portfolioId;
-        Long stockId;
+        String stockCode;
         OrderSide side;
         OrderType orderType;
         BigDecimal quantity; // 원시적인 값 형태로 받기

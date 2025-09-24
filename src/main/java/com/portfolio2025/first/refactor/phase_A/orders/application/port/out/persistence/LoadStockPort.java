@@ -4,4 +4,5 @@ import com.portfolio2025.first.legacy.domain.stock.Stock;
 
 public interface LoadStockPort {
     Stock get(Long stockId);
+    Stock getFromStockCode(String stockCode);
 }

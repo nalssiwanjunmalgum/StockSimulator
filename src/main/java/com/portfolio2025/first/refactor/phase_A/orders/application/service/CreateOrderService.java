@@ -38,6 +38,7 @@ public class CreateOrderService implements CreateOrderUseCase {
     @Override
     @Transactional
     public CreatedOrderResult createOrder(CreateOrderCommand cmd) {
+
         // 0) 멱등 체크
         if (cmd.getClientOrderId() != null) {
             Existing ex = checkIdempotencyPort.findExistingByClientOrderId(cmd.getClientOrderId());
@@ -45,10 +46,12 @@ public class CreateOrderService implements CreateOrderUseCase {
         }
 
         Portfolio portfolio = loadPortfolioPort.get(cmd.getPortfolioId(), cmd.getUserId());
-        Stock stock = loadStockPort.get(cmd.getStockId());
+        // stockCode -> stockId로 변환해야 한다
+        Stock stock = loadStockPort.getFromStockCode(cmd.getStockCode());
 
         // 1) 가격/수량 매핑 (네 도메인: Money/Quantity는 Long 기반)
         Quantity q = new Quantity(cmd.getQuantity().longValueExact());
+
         Money price = (cmd.getOrderType() == LIMIT)
                 ? new Money(cmd.getLimitPrice().longValueExact())
                 : stock.getStockPrice(); // MARKET이면 시세 사용(또는 추정가 정책)
@@ -74,6 +77,8 @@ public class CreateOrderService implements CreateOrderUseCase {
         long savedOrder = saveOrderPort.saveNewOrder(order);
         long savedSo = saveStockOrderPort.saveNewStockOrder(so);
 
+
+        // event 처리 (추후 비동기 예측)
         if (cmd.getClientOrderId() != null) {
             checkIdempotencyPort.record(cmd.getClientOrderId(), savedOrder, savedSo);
         }

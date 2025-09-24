@@ -1,4 +1,4 @@
-package com.portfolio2025.first.refactor.phase_A;
+package com.portfolio2025.first.refactor.phase_A.shared;
 
 import com.portfolio2025.first.legacy.domain.stock.StockOrderStatus;
 import jakarta.persistence.EntityManager;

@@ -26,6 +26,8 @@ public class OrdersController {
     {
         OrderCommandService.CreateResult result = orderCommandService.create(request, idempotencyKey);
 
+
+
         // Service 는 Context(맥락) 관련 정보를 제공하고, Controller에서 이를 해석하고 ResponseEntity를 구조화한다
         URI location = URI.create("/api/v1/orders/" + result.getResponse().getOrderId());
 

@@ -17,7 +17,6 @@ import com.portfolio2025.first.legacy.domain.stock.StockOrder;
 import com.portfolio2025.first.legacy.domain.stock.StockOrderStatus;
 import com.portfolio2025.first.legacy.domain.vo.Money;
 import com.portfolio2025.first.legacy.domain.vo.Quantity;
-import com.portfolio2025.first.refactor.phase_A.orders.application.port.in.CreateOrderUseCase;
 import com.portfolio2025.first.refactor.phase_A.orders.application.port.in.CreateOrderUseCase.CreateOrderCommand;
 import com.portfolio2025.first.refactor.phase_A.orders.application.port.in.CreateOrderUseCase.CreateOrderCommand.OrderSide;
 import com.portfolio2025.first.refactor.phase_A.orders.application.port.in.CreateOrderUseCase.CreateOrderCommand.OrderType;
@@ -53,7 +52,6 @@ class CreateOrderServiceTest {
     @Mock CheckIdempotencyPort checkIdempotencyPort;
     @Mock PublishOrderEventPort publishOrderEventPort;
 
-//    @InjectMocks CreateOrderUseCase sut;
     @InjectMocks CreateOrderService sut;
 
     @BeforeEach
@@ -91,11 +89,11 @@ class CreateOrderServiceTest {
     }
 
     // 제안해서 구매하려는 Command (매수)
-    private CreateOrderCommand limitBuyCmd(long userId, long portfolioId, long stockId, long qty, long limit) {
+    private CreateOrderCommand limitBuyCmd(long userId, long portfolioId, String stockCode, long qty, long limit) {
         return CreateOrderCommand.builder()
                 .userId(userId)
                 .portfolioId(portfolioId)
-                .stockId(stockId)
+                .stockCode(stockCode)
                 .side(OrderSide.BUY)
                 .orderType(OrderType.LIMIT)
                 .quantity(new BigDecimal(qty))
@@ -107,11 +105,11 @@ class CreateOrderServiceTest {
     }
 
     // 시장가 매도
-    private CreateOrderCommand marketSellCmd(long userId, long portfolioId, long stockId, long qty) {
+    private CreateOrderCommand marketSellCmd(long userId, long portfolioId, String stockCode, long qty) {
         return CreateOrderCommand.builder()
                 .userId(userId)
                 .portfolioId(portfolioId)
-                .stockId(stockId)
+                .stockCode(stockCode)
                 .side(OrderSide.SELL)
                 .orderType(OrderType.MARKET)
                 .quantity(new BigDecimal(qty))
@@ -134,14 +132,14 @@ class CreateOrderServiceTest {
         // 멱등/조회 포트 스텁
         when(checkIdempotencyPort.findExistingByClientOrderId("idem-LB-10")).thenReturn(null);
         when(loadPortfolioPort.get(10L, 1L)).thenReturn(pf);
-        when(loadStockPort.get(100L)).thenReturn(st);
+        when(loadStockPort.getFromStockCode("ACME")).thenReturn(st);
 
         // 저장 포트 스텁 -> 생성된 Order, StockOrder에 대한 stub
         when(saveOrderPort.saveNewOrder(any())).thenReturn(111L);
         when(saveStockOrderPort.saveNewStockOrder(any())).thenReturn(222L);
 
         // 커맨드
-        CreateOrderCommand cmd = limitBuyCmd(1L, 10L, 100L, 5L, 1_000L);
+        CreateOrderCommand cmd = limitBuyCmd(1L, 10L, "ACME", 5L, 1_000L);
 
         // When
         CreatedOrderResult res = sut.createOrder(cmd);
@@ -158,7 +156,7 @@ class CreateOrderServiceTest {
 
         // 조회 포트 호출 검증
         verify(loadPortfolioPort).get(10L, 1L);
-        verify(loadStockPort).get(100L);
+        verify(loadStockPort).getFromStockCode("ACME");
 
         // 저장 포트 호출 검증 (시그니처 맞춤)
         verify(saveOrderPort).saveNewOrder(any());
@@ -198,11 +196,11 @@ class CreateOrderServiceTest {
 
         when(checkIdempotencyPort.findExistingByClientOrderId("idem-MS-20")).thenReturn(null);
         when(loadPortfolioPort.get(20L, 2L)).thenReturn(pf);
-        when(loadStockPort.get(200L)).thenReturn(st);
+        when(loadStockPort.getFromStockCode("BETA")).thenReturn(st);
         when(saveOrderPort.saveNewOrder(any())).thenReturn(333L);
         when(saveStockOrderPort.saveNewStockOrder(any())).thenReturn(444L);
 
-        CreateOrderCommand cmd = marketSellCmd(2L, 20L, 200L, 30L);
+        CreateOrderCommand cmd = marketSellCmd(2L, 20L, "BETA", 30L);
 
         // When
         CreatedOrderResult res = sut.createOrder(cmd);
@@ -220,7 +218,7 @@ class CreateOrderServiceTest {
     @DisplayName("3) clientOrderId 중복 → 저장 없이 DUPLICATE_IGNORED")
     void duplicateIgnored() {
         // Given
-        var cmd = limitBuyCmd(1L, 10L, 100L, 5L, 1_000L);
+        var cmd = limitBuyCmd(1L, 10L, "ACME", 5L, 1_000L);
         when(checkIdempotencyPort.findExistingByClientOrderId("idem-LB-10"))
                 .thenReturn(new CheckIdempotencyPort.Existing(777L, 888L));
 
@@ -245,10 +243,10 @@ class CreateOrderServiceTest {
 
 //        when(checkIdempotencyPort.findExistingByClientOrderId(any())).thenReturn(null);
         when(loadPortfolioPort.get(90L, 9L)).thenReturn(pf);
-        when(loadStockPort.get(900L)).thenReturn(st);
+        when(loadStockPort.getFromStockCode("GAMMA")).thenReturn(st);
 
         CreateOrderCommand cmd = CreateOrderCommand.builder()
-                .userId(9L).portfolioId(90L).stockId(900L)
+                .userId(9L).portfolioId(90L).stockCode("GAMMA")
                 .side(OrderSide.SELL).orderType(OrderType.LIMIT)
                 .quantity(BigDecimal.valueOf(100L))
                 .limitPrice(BigDecimal.valueOf(10_000L))
@@ -272,9 +270,10 @@ class CreateOrderServiceTest {
 
         when(checkIdempotencyPort.findExistingByClientOrderId("idem-LB-10")).thenReturn(null);
         when(loadPortfolioPort.get(10L, 1L)).thenReturn(pf);
-        when(loadStockPort.get(100L)).thenReturn(st);
+        when(loadStockPort.getFromStockCode("ACME")).thenReturn(st);
 
-        CreateOrderCommand cmd = limitBuyCmd(1L, 10L, 100L, 5L, 1_000_000L); // 총 500만 → 현금 부족
+        CreateOrderCommand
+                cmd = limitBuyCmd(1L, 10L, "ACME", 5L, 1_000_000L); // 총 500만 → 현금 부족
 
         // When / Then
         assertThatThrownBy(() -> sut.createOrder(cmd))
@@ -287,20 +286,25 @@ class CreateOrderServiceTest {
     @Test
     @DisplayName("6) LIMIT인데 limitPrice 누락/<=0 → IllegalArgumentException")
     void invalidLimitPrice() {
+        // NPE 관련 코드 어떻게?
+        // 검증 책임에 대해서 생각할 수 있어야 한다 -> 검증 책임은 Request 그리고 Command에서 수행하는 방식으로
+
         // Given
-        var cmdNoPrice = CreateOrderCommand.builder()
-                .userId(1L).portfolioId(10L).stockId(100L)
+        CreateOrderCommand cmdNoPrice = CreateOrderCommand.builder()
+                .userId(1L).portfolioId(10L).stockCode("ACME")
                 .side(OrderSide.BUY).orderType(OrderType.LIMIT)
                 .quantity(new BigDecimal("5"))
                 .tif(TimeInForce.GTC)
                 .build();
 
-        var cmdZero = limitBuyCmd(1L, 10L, 100L, 5L, 0L);
+        CreateOrderCommand cmdZero = limitBuyCmd(1L,
+                10L, "ACME", 5L, 0L);
 
         // When / Then
         assertThatThrownBy(() -> sut.createOrder(cmdNoPrice))
                 .isInstanceOf(IllegalArgumentException.class);
 
+        // portfolio가 null 인 상황
         assertThatThrownBy(() -> sut.createOrder(cmdZero))
                 .isInstanceOf(IllegalArgumentException.class);
 
