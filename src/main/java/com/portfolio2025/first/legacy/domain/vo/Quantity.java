@@ -46,7 +46,7 @@ public class Quantity {
     }
 
     public boolean isLowerThan(Quantity otherQuantity) {
-        return ((quantityValue - otherQuantity.getQuantityValue()) < 0);
+        return ((quantityValue - otherQuantity.quantityValue) < 0);
     }
 
     public boolean isZero() {
@@ -61,6 +61,10 @@ public class Quantity {
         if (otherQuantity == null) {
             throw new IllegalArgumentException("인자를 확인해주세요.");
         }
+    }
+
+    public boolean isHigherThan(Quantity other) {
+        return !this.isLowerThan(other) && this.quantityValue != other.quantityValue;
     }
 
     @Override
