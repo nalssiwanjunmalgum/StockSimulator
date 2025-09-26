@@ -8,6 +8,11 @@ import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Positive;
 import lombok.*;
 
+/**
+ * 사용자의 기본적인 HTTP 상의 입력을 받는 상태
+ * 기본적인 검증이 이뤄지는 단계로 생각하기
+ *
+ */
 @Data
 @Builder
 @NoArgsConstructor

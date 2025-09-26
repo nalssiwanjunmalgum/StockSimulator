@@ -1,0 +1,31 @@
+spring:
+  config:
+    activate:
+      on-profile: phaseA
+
+  datasource:
+    url: jdbc:mysql://127.0.0.1:3306/testdb?serverTimezone=Asia/Seoul&useSSL=false&allowPublicKeyRetrieval=true
+    username: testuser
+    password: testpass
+
+  flyway:
+    enabled: true
+    locations: classpath:db/migration,classpath:db/testdata  # ← 테스트 전용 시드 추가
+    clean-disabled: false # 테스트 클린을 허용한다.
+    clean-on-validation-error: true # validate 실패 -> clean 하고 재적용한다
+    baseline-on-migrate: true # 기존 스키마 있으면 baseline 생성
+    repeatable-sql-migration-prefix: R
+
+  jpa:
+    hibernate:
+      ddl-auto: validate
+    show-sql: false
+    properties:
+      hibernate:
+        format_sql: true
+    database-platform: org.hibernate.dialect.MySQLDialect
+
+logging:
+  level:
+    org.hibernate.SQL: off          # SQL 로거 끔
+    org.hibernate.orm.jdbc.bind: off  # Hibernate 6: 파라미터 바인딩 로그 끔

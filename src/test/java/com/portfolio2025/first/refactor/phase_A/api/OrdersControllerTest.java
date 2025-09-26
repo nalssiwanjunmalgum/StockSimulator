@@ -30,8 +30,7 @@ class OrdersControllerTest {
 
     @Autowired MockMvc mvc;
     @Autowired ObjectMapper om;
-    @MockitoBean
-    OrderCommandService orderCommandService;
+    @MockitoBean OrderCommandService orderCommandService;
 
 
     @Test
